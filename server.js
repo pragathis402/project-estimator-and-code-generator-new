@@ -67,6 +67,11 @@ async function fetchWithRetry(url, options, retries = 3, delay = 2000) {
   throw new Error("Model overloaded after multiple retries.");
 }
 
+// --- Root route for homepage (fixes Cannot GET /) ---
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "index.html"));
+});
+
 // --- Generate endpoint ---
 app.post("/generate", async (req, res) => {
   try {
@@ -83,10 +88,10 @@ app.post("/generate", async (req, res) => {
 
     /**
      * Model priority:
-     * 1. Gemini 3.0 (try if enabled)
-     * 2. Flash-lite (best free-tier reliability)
+     * 1. Gemini 3.0
+     * 2. Flash-lite (free-tier reliable)
      * 3. Flash
-     * 4. Pro (usually quota-blocked)
+     * 4. Pro
      */
     const MODELS = [
       "gemini-3.0",
@@ -159,6 +164,11 @@ No markdown. No explanation.
     console.error("❌ Generation error:", error.message);
     res.status(503).json({ error: error.message });
   }
+});
+
+// --- Optional health check endpoint ---
+app.get("/health", (req, res) => {
+  res.json({ status: "ok" });
 });
 
 // --- Start server ---
